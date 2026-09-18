@@ -1,0 +1,78 @@
+Project leshy {
+  database_type: "PostgreSQL"
+}
+
+Table space {
+  id uuid [primary key, default: "gen_random_uuid()"]
+  name varchar(255) [unique, not null]
+}
+
+Table plant {
+  id uuid [primary key, default: "gen_random_uuid()"]
+  binomial_name varchar(255) [unique, not null]
+}
+
+Table disease {
+  id uuid [primary key, default: "gen_random_uuid()"]
+  type_id uuid [ref: > type.id, delete: "cascade"]
+}
+
+Table type {
+  id uuid [primary key, default: "gen_random_uuid()"]
+}
+
+Table locale {
+  id uuid [primary key, default: "gen_random_uuid()"]
+  code varchar(5) [unique, not null]
+}
+
+Table plant_translation {
+  plant_id uuid [ref: > plant.id, delete: "cascade"]
+  locale_id uuid [ref: > locale.id, delete: "cascade"]
+  name varchar(255)
+  description text
+
+  indexes {
+    (plant_id, locale_id) [pk]
+  }
+}
+
+Table disease_translation {
+  disease_id uuid [ref: > disease.id, delete: "cascade"]
+  locale_id uuid [ref: > locale.id, delete: "cascade"]
+  name varchar(255)
+  description text
+
+  indexes {
+    (disease_id, locale_id) [pk]
+  }
+}
+
+Table type_translation {
+  type_id uuid [ref: > type.id, delete: "cascade"]
+  locale_id uuid [ref: > locale.id, delete: "cascade"]
+  name varchar(255)
+  description text
+
+  indexes {
+    (type_id, locale_id) [pk]
+  }
+}
+
+Table space_plant {
+  space_id uuid [ref: > space.id, delete: "cascade"]
+  plant_id uuid [ref: > plant.id, delete: "cascade"]
+
+  indexes {
+    (space_id, plant_id) [pk]
+  }
+}
+
+Table plant_disease {
+  plant_id uuid [ref: > plant.id, delete: "cascade"]
+  disease_id uuid [ref: > disease.id, delete: "cascade"]
+
+  indexes {
+    (plant_id, disease_id) [pk]
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "extends": [
+    "../.oxlintrc.json",
+  ],
+  "sortImports": {
+    "internalPattern": [
+      "src/"
+    ],
+    "customGroups": [
+      {
+        "groupName": "nestjs",
+        "elementNamePattern": [
+          "@nestjs/**"
+        ]
+      },
+      {
+        "groupName": "typeorm",
+        "elementNamePattern": [
+          "typeorm/**"
+        ]
+      },
+      {
+        "groupName": "module",
+        "elementNamePattern": [
+          "src/**/*.module"
+        ]
+      },
+      {
+        "groupName": "controller",
+        "elementNamePattern": [
+          "src/**/*.controller"
+        ]
+      },
+      {
+        "groupName": "service",
+        "elementNamePattern": [
+          "src/**/*.service"
+        ]
+      },
+      {
+        "groupName": "entity",
+        "elementNamePattern": [
+          "src/**/*.entity"
+        ]
+      },
+      {
+        "groupName": "dto",
+        "elementNamePattern": [
+          "src/**/*.dto"
+        ]
+      }
+    ],
+    "groups": [
+      "unknown",
+      "nestjs",
+      "typeorm",
+      "internal",
+      "module",
+      "controller",
+      "service",
+      "entity",
+      "dto",
+      "type-import"
+    ]
+  }
+}
