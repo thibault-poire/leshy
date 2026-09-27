@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
 import { Plant } from "src/plants/entities/plant.entity";
@@ -13,7 +13,13 @@ export class PlantsService {
     return this.plant_repository.find();
   }
 
-  get_one(filters: FindOptionsWhere<Plant>) {
-    return this.plant_repository.findOneBy(filters);
+  async get_one(filters: FindOptionsWhere<Plant>) {
+    const plant = await this.plant_repository.findOneBy(filters);
+
+    if (!plant) {
+      throw new NotFoundException();
+    }
+
+    return plant;
   }
 }

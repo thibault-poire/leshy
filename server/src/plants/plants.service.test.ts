@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PlantsService } from './plants.service';
 import { Repository, ObjectLiteral } from 'typeorm';
+import { NotFoundException } from '@nestjs/common';
 import { Plant } from './entities/plant.entity';
 
 describe('PlantsService', () => {
@@ -54,14 +55,12 @@ describe('PlantsService', () => {
       expect(repository.findOneBy).toHaveBeenCalledWith(filters);
     });
 
-    it('should return null when plant not found', async () => {
+    it('should throw NotFoundException when plant not found', async () => {
       const filters = { id: 'uuid-not-found' };
 
       vi.mocked(repository.findOneBy).mockResolvedValue(null);
 
-      const result = await service.get_one(filters);
-
-      expect(result).toBeNull();
+      await expect(service.get_one(filters)).rejects.toBeInstanceOf(NotFoundException);
       expect(repository.findOneBy).toHaveBeenCalledWith(filters);
     });
   });
