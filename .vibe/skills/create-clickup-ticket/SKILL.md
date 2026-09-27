@@ -33,7 +33,7 @@ When invoked (via `/create-clickup-ticket` or model selection):
    - Use the first sentence or a summarized version if the text is long
    - Ensure the title is clear and descriptive
 
-4. **Ask for priority**
+5. **Ask for priority**
    - Prompt: "What is the **priority**?"
    - Present options: `urgente`, `élevée`, `normale`, `basse`
    - Map French to ClickUp values:
@@ -43,13 +43,13 @@ When invoked (via `/create-clickup-ticket` or model selection):
      - `basse` → `low`
    - Default: `normal` if user presses enter without selection
 
-5. **Ask for the target list**
+6. **Ask for the target list**
    - Prompt: "Dans quelle **liste ClickUp** cette tâche doit-elle être créée ? (indiquez le nom ou l'ID de la liste)"
    - If user provides a name, use `clickup_get_list` to resolve it to an ID
    - If user provides an ID directly, use it as-is
    - Default: "Tasks" if user presses enter without selection
 
-6. **Create the task**
+7. **Create the task**
    - Use `clickup_create_task` with:
      - `name`: the derived title from **reformulated** functional information (step 4, max ~255 chars)
      - `list_id`: the resolved list ID (from step 5)

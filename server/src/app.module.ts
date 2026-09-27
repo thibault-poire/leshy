@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
-import { SpacesModule } from "src/spaces/spaces.module.js";
+import { SpacesModule } from "src/spaces/spaces.module";
 
 @Module({
   imports: [
