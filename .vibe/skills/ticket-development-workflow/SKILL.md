@@ -1,6 +1,6 @@
 ---
 name: ticket-development-workflow
-description: Load this skill to execute a complete development workflow from a ClickUp ticket: fetch ticket details, develop NestJS features, and generate unit tests. Invoke via /ticket-development-workflow [id]. If any skill fails, it will notify you and wait for instructions to continue or stop.
+description: "Load this skill to execute a complete development workflow from a ClickUp ticket: fetch ticket details, develop NestJS features, and generate unit tests. Invoke via /ticket-development-workflow [id]. If any skill fails, it will notify you and wait for instructions to continue or stop."
 user-invocable: true
 ---
 
@@ -25,7 +25,7 @@ Invoke this skill using one of these commands:
 
 - Invokes `get-clickup-ticket` skill with the provided or prompted ticket ID
 - Extracts: `id`, `name`, `markdown_description`
-- **On failure**: Notifies user and asks whether to continue or abort
+- **On failure**: Notifies user and asks whether to retry with a different ID or abort
 
 ### Phase 2: NestJS Development
 
@@ -35,7 +35,7 @@ Invoke this skill using one of these commands:
 
 ### Phase 3: Unit Test Generation
 
-- Invokes `unit-test-generator` skill to create tests for the developed features
+- Invokes `unit-test-generator` skill to create Vitest tests for the controllers and services developed in Phase 2
 - **On failure**: Notifies user that tests may need manual completion
 
 ## Error Handling
@@ -48,7 +48,7 @@ This skill implements **fail-fast with user confirmation**:
    - If "retry": prompt for new ID and retry Phase 1
    - If "abort": stop workflow
 
-2. If `nestjs-developer` fails (development error, missing info):
+2. If `nestjs-developer` fails (development error, git error):
    - Show error message to user
    - Ask: "Development failed. Do you want to continue to test generation or abort? (continue/abort)"
    - If "continue": proceed to Phase 3 with available data
@@ -56,7 +56,7 @@ This skill implements **fail-fast with user confirmation**:
 
 3. If `unit-test-generator` fails (test generation error):
    - Show error message to user
-   - Notify: "Test generation failed. The development is complete but tests may need manual work."
+   - Notify: "Test generation failed. The NestJS development is complete but tests may need manual work."
    - Workflow completes (no abort option as this is the final phase)
 
 ## Input Processing
@@ -87,7 +87,7 @@ Phase 1: get-clickup-ticket
 Phase 2: nestjs-developer
     ↓ (output: developed NestJS code)
 Phase 3: unit-test-generator
-    ↓
+    ↓ (output: Vitest test files beside the source files)
 Complete Workflow
 ```
 
@@ -110,7 +110,8 @@ Complete Workflow
 ### Phase 3: unit-test-generator
 
 - Tool: `skill` with name `unit-test-generator`
-- Input: Same JSON data from Phase 1 (or instruction to generate tests for the feature)
+- Input: The module, controllers and services developed in Phase 2 (not the ticket JSON)
+- Expected output: Vitest test files (`<module>.controller.test.ts`, `<module>.service.test.ts`) in `server/src/<module>/`
 - On error: Notify user but complete workflow
 
 ## User Interaction Flow
@@ -193,7 +194,7 @@ Skill:
 1. Loading get-clickup-ticket for DEV-123...
 2. Ticket found: "Create user authentication"
 3. Loading nestjs-developer...
-4. Error: Missing required information for entity definition
+4. Error: Git command failed: unable to create the development branch
 5. Development failed. Do you want to continue to test generation or abort? (continue/abort)
 
 User: continue

@@ -1,9 +1,7 @@
 ---
 name: nestjs-developer
-description: Load this skill when the user wants to develop NestJS features following project conventions. Accepts development objectives in JSON (similar to get-clickup-ticket output format: id, name, markdown_description) or text format. Uses plan mode to break down tasks.
+description: "Load this skill when the user wants to develop NestJS features following project conventions. Accepts development objectives in JSON (similar to get-clickup-ticket output format: id, name, markdown_description) or text format. Uses plan mode to break down tasks."
 user-invocable: true
-allowed-tools: read_file, write_file, edit, grep, bash, todo
-mode: plan
 ---
 
 # NestJS Developer Skill
@@ -23,7 +21,7 @@ This skill helps develop NestJS features following the existing project conventi
 
 - Use relative paths starting with `src/` (e.g., `"src/spaces/spaces.service"`)
 - Do NOT use `../` parent imports (oxlint rule: `import/no-relative-parent-imports`)
-- Import order (oxfmt): nestjs, typeorm, internal, modules, controllers, services, entities, dtos
+- Import order (oxfmt), groups separated by blank lines: nestjs imports (`@nestjs/*`) first, then internal imports (`src/...`), then typeorm type-only imports (`import type { ... } from "typeorm"`) last
 
 ### TypeScript & NestJS
 
@@ -42,7 +40,7 @@ This skill helps develop NestJS features following the existing project conventi
 
 - **Linter**: oxlint with rules:
   - No relative parent imports (`import/no-relative-parent-imports`)
-  - No explicit `any` (`typescript/no-explicit-any`)
+  - Explicit `any` is allowed by config (`typescript/no-explicit-any` is "off"), but prefer proper types or `unknown` anyway
   - No floating promises (`typescript/no-floating-promises`)
 - **Formatter**: oxfmt with custom import sorting
 
@@ -62,7 +60,7 @@ The JSON input must contain at least `id` and `name` fields (matching get-clicku
 }
 ```
 
-**Branch Creation Rule**: Before starting development, the skill will create/switch to a branch named `[id]-[title]` where `title` is the `name` field converted to lowercase with spaces replaced by underscores.
+**Branch Creation Rule**: Before starting development, the skill will create/switch to a branch named `[id]-[title]` where `title` is the `name` field **translated to English**, converted to lowercase with spaces replaced by underscores.
 
 Example: For the JSON above, branch name would be: `DEV-123-create_user_authentication`
 
@@ -95,8 +93,8 @@ When invoked via `/nestjs-developer` or by describing a NestJS development task:
 1. **Extract or request ID and name**:
    - For JSON input: use `id` and `name` fields
    - For text input: prompt user for `id` and `name`
-2. **Generate branch name**: Convert `name` to lowercase and replace spaces with underscores: `name.toLowerCase().replace(/\s+/g, '_')`
-3. **Create branch**: `[id]-[converted_name]` (e.g., `DEV-123-create_user_authentication`)
+2. **Generate branch name**: **Translate `name` to English** first (titles are often in French), then convert to lowercase and replace spaces with underscores: `name.trim().toLowerCase().replace(/\s+/g, '_')`
+3. **Create branch**: `[id]-[english_title]` (e.g., `DEV-123-create_user_authentication`)
 4. **Switch to branch**: Use `git checkout -b [branch_name]` or `git switch -c [branch_name]`
 
 ### Phase 1: Parse & Validate Input
@@ -177,7 +175,7 @@ For each component in the plan:
 
 ### Phase 6: Validation
 
-1. **Run linting**: `pnpm lint` or `oxlint`
+1. **Run linting** (from `server/`): `pnpm lint`
 2. **Check TypeScript**: `npx tsc --noEmit`
 3. **Verify structure** matches project conventions
 
@@ -192,11 +190,12 @@ When receiving JSON input (matching get-clickup-ticket output):
    - `id`: Task/feature identifier (used for branch name prefix)
    - `name`: Feature title (used for branch name suffix)
    - `markdown_description`: Full description (parsed for requirements)
-3. Generate branch name: `[id]-[name_in_lowercase_with_underscores]`
-   - Convert `name` to lowercase: `name.toLowerCase()`
+3. Generate branch name: `[id]-[english_title_in_lowercase_with_underscores]`
+   - **Translate `name` to English** if it is not already in English (titles are often in French)
+   - Trim and convert the English title to lowercase: `name.trim().toLowerCase()`
    - Replace all spaces with underscores: `.replace(/\s+/g, '_')`
-   - Example: `"Create User Auth"` -> `"create_user_auth"`
-   - Final branch: `DEV-123-create_user_auth`
+   - Example: `"Créer l'authentification utilisateur"` -> `"create_user_authentication"`
+   - Final branch: `DEV-123-create_user_authentication`
 4. Extract development requirements from `markdown_description`:
    - Parse for entity definitions
    - Parse for endpoint definitions
@@ -216,18 +215,22 @@ When receiving plain text input:
 2. **Prompt for branch information**:
    - Ask: "Quel est l'ID pour cette tache ? (ex: DEV-123)"
    - Ask: "Quel est le titre pour cette tache ? (sera utilise pour le nom de la branch)"
-3. Generate branch name from provided id and title
+3. Generate branch name from provided id and title (**translate the title to English** before slugification)
 4. Ask clarifying questions if information is ambiguous
 5. Present parsed structure to user for confirmation
 
 ## Branch Naming Rules
 
-The branch name is always generated as: `[id]-[title_slug]`
+The branch name is always generated as: `[id]-[english_title_slug]` (the title is translated to English before slugification)
 
 Where:
 
 - `id`: The value from the `id` field (e.g., "DEV-123", "FEAT-456")
-- `title_slug`: The `name` field converted to lowercase with all whitespace replaced by underscores
+- `title_slug`: The `name` field **translated to English**, then converted to lowercase with all whitespace replaced by underscores
+
+Examples with a French title:
+
+- `id: "DEV-123"`, `name: "Créer l'authentification utilisateur"` -> `DEV-123-create_user_authentication`
 
 Examples:
 
@@ -255,8 +258,8 @@ export class {{EntityName}} {
 
 {{#each fields}}
   @Column({
-{{#if type}}
-    type: "{{type}}",
+{{#if column_type}}
+    type: "{{column_type}}",
 {{/if}}
 {{#if length}}
     length: {{length}},
@@ -271,7 +274,7 @@ export class {{EntityName}} {
     default: {{default}},
 {{/if}}
   })
-  {{name}}: {{type}};
+  {{property_name}}: {{ts_type}};
 {{/each}}
 }
 ```
@@ -307,8 +310,7 @@ export class {{ServiceName}} {
   ) {}
 
 {{#each methods}}
-  {{#if async}}
-async {{/if}}{{name}}({{params}}): {{returnType}} {
+  {{#if async}}async {{/if}}{{name}}({{params}}): {{returnType}} {
     {{body}}
   }
 {{/each}}
@@ -359,14 +361,13 @@ export class {{ModuleName}} {}
 
 1. **Always use `src/` prefix** for internal imports, never `../`
 2. **Follow oxlint rules**:
-   - No `any` types (use proper types or `unknown`)
    - No floating promises (await or return promises)
    - No relative parent imports
-3. **Follow oxfmt import order**:
-   - nestjs imports first
-   - typeorm imports second
-   - other external imports
-   - internal imports (src/...)
+   - Explicit `any` is allowed by config (`typescript/no-explicit-any` is "off"), but prefer proper types or `unknown`
+3. **Follow oxfmt import order** (groups separated by blank lines):
+   - nestjs imports (`/*`) first
+   - internal imports (`src/...`) second
+   - typeorm type-only imports (`import type { ... } from "typeorm"`) last
 4. **Use UUID** for primary keys: `@PrimaryGeneratedColumn("uuid")`
 5. **Use ValidationPipe** globally (already configured in main.ts)
 6. **Use class-validator** for DTO validation
@@ -438,8 +439,9 @@ Skill:
   - Create and switch: `git checkout -b [branch_name]`
   - Switch existing: `git switch [branch_name]`
   - Check current branch: `git branch --show-current`
-- Lint: `pnpm lint` or `oxlint --type-aware src/ test/`
-- Format: `pnpm format` or `prettier --write "src/**/*.ts" "test/**/*.ts"`
+- All commands run from the `server/` directory
+- Lint: `pnpm lint` (runs `oxlint --type-aware src/ test/`)
+- Format: `pnpm format` (script runs `prettier`, which is not installed; the installed formatter is `oxfmt`)
 - TypeScript check: `npx tsc --noEmit`
 - Test: `pnpm test`
 - Build: `pnpm build`

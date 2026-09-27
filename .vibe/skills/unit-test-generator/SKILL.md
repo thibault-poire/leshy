@@ -4,7 +4,7 @@ description: Write unit tests with Vitest for NestJS controller and service.
 user-invocable: true
 ---
 
-# Skill: Unot test generator
+# Skill: Unit test generator
 
 Use this skill when the user asks to create or extend unit tests for a NestJS controller or service in this repository.
 
@@ -18,7 +18,7 @@ Use this skill when the user asks to create or extend unit tests for a NestJS co
 - Controller tests should stub the service methods using `vi.spyOn(service, "<method>").mockResolvedValue(...)` or `mockRejectedValue(...)` without constructing a real repository-backed service instance.
 - TypeORM repositories are typed as `Repository<T>` from `typeorm`, and the repository object shape should stay minimal and method-specific.
 - Error assertions should check `NotFoundException` with `rejects.toBeInstanceOf(NotFoundException)`.
-- Tests should stay close to the style already used in the existing `keys` examples.
+- Tests should stay close to the style already used in the existing `spaces` examples.
 
 ## Writing controller tests
 
