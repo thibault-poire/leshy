@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
 import { Space } from "src/spaces/entities/space.entity";
@@ -13,7 +13,13 @@ export class SpacesService {
     return this.space_repository.find();
   }
 
-  get_one(filters: FindOptionsWhere<Space>) {
-    return this.space_repository.findOneBy(filters);
+  async get_one(filters: FindOptionsWhere<Space>) {
+    const space = await this.space_repository.findOneBy(filters);
+
+    if (!space) {
+      throw new NotFoundException();
+    }
+
+    return space;
   }
 }

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PlantsController } from './plants.controller';
 import { PlantsService } from './plants.service';
+import { NotFoundException } from '@nestjs/common';
 
 describe('PlantsController', () => {
   let controller: PlantsController;
@@ -43,13 +44,10 @@ describe('PlantsController', () => {
       expect(service.get_one).toHaveBeenCalledWith({ id: 'uuid-1' });
     });
 
-    it('should return null when plant not found', async () => {
-      vi.spyOn(service, 'get_one').mockResolvedValue(null);
+    it('should propagate NotFoundException when plant not found', async () => {
+      vi.spyOn(service, 'get_one').mockRejectedValue(new NotFoundException());
 
-      const result = await controller.get_one('uuid-not-found');
-
-      expect(result).toBeNull();
-      expect(service.get_one).toHaveBeenCalledWith({ id: 'uuid-not-found' });
+      await expect(controller.get_one('uuid-not-found')).rejects.toThrow(NotFoundException);
     });
   });
 });

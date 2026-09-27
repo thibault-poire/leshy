@@ -8,7 +8,10 @@ describe('SpacesController', () => {
   let service: Partial<SpacesService>;
 
   beforeEach(() => {
-    service = {};
+    service = {
+      get_all: vi.fn(),
+      get_one: vi.fn(),
+    };
 
     controller = new SpacesController(service as SpacesService);
   });
