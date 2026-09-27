@@ -441,7 +441,7 @@ Skill:
   - Check current branch: `git branch --show-current`
 - All commands run from the `server/` directory
 - Lint: `pnpm lint` (runs `oxlint --type-aware src/ test/`)
-- Format: `pnpm format` (script runs `prettier`, which is not installed; the installed formatter is `oxfmt`)
+- Format: `pnpm format` (runs `oxfmt src/ test/`)
 - TypeScript check: `npx tsc --noEmit`
 - Test: `pnpm test`
 - Build: `pnpm build`

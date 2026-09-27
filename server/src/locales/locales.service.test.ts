@@ -1,11 +1,11 @@
-import { Plant } from "./entities/plant.entity";
-import { PlantsService } from "./plants.service";
+import { Locale } from "./entities/locale.entity";
+import { LocalesService } from "./locales.service";
 import { Repository, ObjectLiteral } from "typeorm";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 import { NotFoundException } from "@nestjs/common";
 
-describe("PlantsService", () => {
+describe("LocalesService", () => {
   const repository_mock = <T extends ObjectLiteral>() =>
     ({
       delete: vi.fn(),
@@ -18,20 +18,20 @@ describe("PlantsService", () => {
       count: vi.fn(),
     }) as unknown as Repository<T>;
 
-  let service: PlantsService;
-  let repository: Repository<Plant>;
+  let service: LocalesService;
+  let repository: Repository<Locale>;
 
   beforeEach(() => {
-    repository = repository_mock<Plant>();
+    repository = repository_mock<Locale>();
 
-    service = new PlantsService(repository);
+    service = new LocalesService(repository);
   });
 
   describe("get_all", () => {
-    it("should return all plants from repository", async () => {
+    it("should return all locales from repository", async () => {
       const expected = [
-        { id: "uuid-1", binomial_name: "Quercus robur" },
-        { id: "uuid-2", binomial_name: "Acer saccharinum" },
+        { id: "uuid-1", code: "fr" },
+        { id: "uuid-2", code: "en" },
       ];
 
       vi.mocked(repository.find).mockResolvedValue(expected);
@@ -44,9 +44,9 @@ describe("PlantsService", () => {
   });
 
   describe("get_one", () => {
-    it("should return one plant by filters", async () => {
+    it("should return one locale by filters", async () => {
       const filters = { id: "uuid-1" };
-      const expected = { id: "uuid-1", binomial_name: "Quercus robur" };
+      const expected = { id: "uuid-1", code: "fr" };
 
       vi.mocked(repository.findOneBy).mockResolvedValue(expected);
 
@@ -56,7 +56,7 @@ describe("PlantsService", () => {
       expect(repository.findOneBy).toHaveBeenCalledWith(filters);
     });
 
-    it("should throw NotFoundException when plant not found", async () => {
+    it("should throw NotFoundException when locale not found", async () => {
       const filters = { id: "uuid-not-found" };
 
       vi.mocked(repository.findOneBy).mockResolvedValue(null);

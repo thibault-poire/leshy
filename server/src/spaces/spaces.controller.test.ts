@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { SpacesController } from './spaces.controller';
-import { SpacesService } from './spaces.service';
-import { NotFoundException } from '@nestjs/common';
+import { SpacesController } from "./spaces.controller";
+import { SpacesService } from "./spaces.service";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
-describe('SpacesController', () => {
+import { NotFoundException } from "@nestjs/common";
+
+describe("SpacesController", () => {
   let controller: SpacesController;
   let service: Partial<SpacesService>;
 
@@ -16,14 +17,14 @@ describe('SpacesController', () => {
     controller = new SpacesController(service as SpacesService);
   });
 
-  describe('get_all', () => {
-    it('should return all spaces', async () => {
+  describe("get_all", () => {
+    it("should return all spaces", async () => {
       const expected = [
-        { id: 'uuid-1', name: 'Space 1' },
-        { id: 'uuid-2', name: 'Space 2' },
+        { id: "uuid-1", name: "Space 1" },
+        { id: "uuid-2", name: "Space 2" },
       ];
 
-      vi.spyOn(service, 'get_all').mockResolvedValue(expected);
+      vi.spyOn(service, "get_all").mockResolvedValue(expected);
 
       const result = await controller.get_all();
 
@@ -31,29 +32,29 @@ describe('SpacesController', () => {
       expect(service.get_all).toHaveBeenCalledTimes(1);
     });
 
-    it('should propagate NotFoundException when no spaces found', async () => {
-      vi.spyOn(service, 'get_all').mockRejectedValue(new NotFoundException('Not found'));
+    it("should propagate NotFoundException when no spaces found", async () => {
+      vi.spyOn(service, "get_all").mockRejectedValue(new NotFoundException("Not found"));
 
       await expect(controller.get_all()).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('get_one', () => {
-    it('should return one space by id', async () => {
-      const expected = { id: 'uuid-1', name: 'Test Space' };
+  describe("get_one", () => {
+    it("should return one space by id", async () => {
+      const expected = { id: "uuid-1", name: "Test Space" };
 
-      vi.spyOn(service, 'get_one').mockResolvedValue(expected);
+      vi.spyOn(service, "get_one").mockResolvedValue(expected);
 
-      const result = await controller.get_one('uuid-1');
+      const result = await controller.get_one("uuid-1");
 
       expect(result).toBe(expected);
-      expect(service.get_one).toHaveBeenCalledWith({ id: 'uuid-1' });
+      expect(service.get_one).toHaveBeenCalledWith({ id: "uuid-1" });
     });
 
-    it('should propagate NotFoundException when space not found', async () => {
-      vi.spyOn(service, 'get_one').mockRejectedValue(new NotFoundException('Not found'));
+    it("should propagate NotFoundException when space not found", async () => {
+      vi.spyOn(service, "get_one").mockRejectedValue(new NotFoundException("Not found"));
 
-      await expect(controller.get_one('uuid-not-found')).rejects.toThrow(NotFoundException);
+      await expect(controller.get_one("uuid-not-found")).rejects.toThrow(NotFoundException);
     });
   });
 });
