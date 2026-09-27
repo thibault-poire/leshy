@@ -1,15 +1,15 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity("space")
-export class Space {
+@Entity("locale")
+export class Locale {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column({
     type: "varchar",
-    length: 255,
+    length: 5,
     unique: true,
     nullable: false,
   })
-  name: string;
+  code: string;
 }

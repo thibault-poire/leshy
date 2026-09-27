@@ -1,12 +1,12 @@
-import { PlantsController } from "./plants.controller";
-import { PlantsService } from "./plants.service";
+import { LocalesController } from "./locales.controller";
+import { LocalesService } from "./locales.service";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 import { NotFoundException } from "@nestjs/common";
 
-describe("PlantsController", () => {
-  let controller: PlantsController;
-  let service: Partial<PlantsService>;
+describe("LocalesController", () => {
+  let controller: LocalesController;
+  let service: Partial<LocalesService>;
 
   beforeEach(() => {
     service = {
@@ -14,14 +14,14 @@ describe("PlantsController", () => {
       get_one: vi.fn(),
     };
 
-    controller = new PlantsController(service as PlantsService);
+    controller = new LocalesController(service as LocalesService);
   });
 
   describe("get_all", () => {
-    it("should return all plants", async () => {
+    it("should return all locales", async () => {
       const expected = [
-        { id: "uuid-1", binomial_name: "Quercus robur" },
-        { id: "uuid-2", binomial_name: "Acer saccharinum" },
+        { id: "uuid-1", code: "fr" },
+        { id: "uuid-2", code: "en" },
       ];
 
       vi.spyOn(service, "get_all").mockResolvedValue(expected);
@@ -34,8 +34,8 @@ describe("PlantsController", () => {
   });
 
   describe("get_one", () => {
-    it("should return one plant by id", async () => {
-      const expected = { id: "uuid-1", binomial_name: "Quercus robur" };
+    it("should return one locale by id", async () => {
+      const expected = { id: "uuid-1", code: "fr" };
 
       vi.spyOn(service, "get_one").mockResolvedValue(expected);
 
@@ -45,7 +45,7 @@ describe("PlantsController", () => {
       expect(service.get_one).toHaveBeenCalledWith({ id: "uuid-1" });
     });
 
-    it("should propagate NotFoundException when plant not found", async () => {
+    it("should propagate NotFoundException when locale not found", async () => {
       vi.spyOn(service, "get_one").mockRejectedValue(new NotFoundException());
 
       await expect(controller.get_one("uuid-not-found")).rejects.toThrow(NotFoundException);

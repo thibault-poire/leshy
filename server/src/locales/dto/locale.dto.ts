@@ -1,8 +1,8 @@
 import { IsNotEmpty, IsString, MaxLength } from "class-validator";
 
-export class PlantDto {
+export class LocaleDto {
   @IsString()
   @IsNotEmpty()
-  @MaxLength(255)
-  binomial_name: string;
+  @MaxLength(5)
+  code: string;
 }

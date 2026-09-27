@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { SpacesService } from './spaces.service';
-import { Repository, ObjectLiteral } from 'typeorm';
-import { NotFoundException } from '@nestjs/common';
-import { Space } from './entities/space.entity';
+import { Space } from "./entities/space.entity";
+import { SpacesService } from "./spaces.service";
+import { Repository, ObjectLiteral } from "typeorm";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
-describe('SpacesService', () => {
+import { NotFoundException } from "@nestjs/common";
+
+describe("SpacesService", () => {
   const repository_mock = <T extends ObjectLiteral>() =>
     ({
       delete: vi.fn(),
@@ -26,11 +27,11 @@ describe('SpacesService', () => {
     service = new SpacesService(repository);
   });
 
-  describe('get_all', () => {
-    it('should return all spaces from repository', async () => {
+  describe("get_all", () => {
+    it("should return all spaces from repository", async () => {
       const expected = [
-        { id: 'uuid-1', name: 'Space 1' },
-        { id: 'uuid-2', name: 'Space 2' },
+        { id: "uuid-1", name: "Space 1" },
+        { id: "uuid-2", name: "Space 2" },
       ];
 
       vi.mocked(repository.find).mockResolvedValue(expected);
@@ -42,10 +43,10 @@ describe('SpacesService', () => {
     });
   });
 
-  describe('get_one', () => {
-    it('should return one space by filters', async () => {
-      const filters = { id: 'uuid-1' };
-      const expected = { id: 'uuid-1', name: 'Test Space' };
+  describe("get_one", () => {
+    it("should return one space by filters", async () => {
+      const filters = { id: "uuid-1" };
+      const expected = { id: "uuid-1", name: "Test Space" };
 
       vi.mocked(repository.findOneBy).mockResolvedValue(expected);
 
@@ -55,8 +56,8 @@ describe('SpacesService', () => {
       expect(repository.findOneBy).toHaveBeenCalledWith(filters);
     });
 
-    it('should throw NotFoundException when space not found', async () => {
-      const filters = { id: 'uuid-not-found' };
+    it("should throw NotFoundException when space not found", async () => {
+      const filters = { id: "uuid-not-found" };
 
       vi.mocked(repository.findOneBy).mockResolvedValue(null);
 
