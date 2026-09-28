@@ -1,16 +1,17 @@
 ---
 name: ticket-development-workflow
-description: "Load this skill to execute a complete development workflow from a ClickUp ticket: fetch ticket details, develop NestJS features, and generate unit tests. Invoke via /ticket-development-workflow [id]. If any skill fails, it will notify you and wait for instructions to continue or stop."
+description: "Load this skill to execute a complete development workflow from a ClickUp ticket: fetch ticket details, develop NestJS features, generate unit tests, then commit and push the branch. Invoke via /ticket-development-workflow [id]. If any skill fails, it will notify you and wait for instructions to continue or stop."
 user-invocable: true
 ---
 
 # Ticket Development Workflow Skill
 
-This skill orchestrates a complete development workflow by sequentially invoking three specialized skills:
+This skill orchestrates a complete development workflow by sequentially invoking four specialized skills:
 
 1. `get-clickup-ticket` - Retrieve ClickUp ticket details
 2. `nestjs-developer` - Develop NestJS features based on ticket requirements
 3. `unit-test-generator` - Generate unit tests for the developed features
+4. `commit-and-push` - Stage all changes, commit in `feat(<ticket-id>): <message>` format, and push the branch
 
 ## Invocation
 
@@ -38,6 +39,12 @@ Invoke this skill using one of these commands:
 - Invokes `unit-test-generator` skill to create Vitest tests for the controllers and services developed in Phase 2
 - **On failure**: Notifies user that tests may need manual completion
 
+### Phase 4: Commit and Push
+
+- Invokes `commit-and-push` skill to stage all changes, commit, and push the current branch
+- The commit message is in English following `feat(<ticket-id>): <message>`, with the ticket ID extracted from the branch name
+- **On failure**: Notifies user that changes may need manual push
+
 ## Error Handling
 
 This skill implements **fail-fast with user confirmation**:
@@ -57,7 +64,12 @@ This skill implements **fail-fast with user confirmation**:
 3. If `unit-test-generator` fails (test generation error):
    - Show error message to user
    - Notify: "Test generation failed. The NestJS development is complete but tests may need manual work."
-   - Workflow completes (no abort option as this is the final phase)
+   - Proceed to Phase 4 (no abort option)
+
+4. If `commit-and-push` fails (git error, push rejected):
+   - Show error message to user
+   - Notify: "Commit and push failed. The development and tests are complete, but changes may need manual push."
+   - Workflow completes (this is the final phase)
 
 ## Input Processing
 
@@ -88,6 +100,8 @@ Phase 2: nestjs-developer
     ↓ (output: developed NestJS code)
 Phase 3: unit-test-generator
     ↓ (output: Vitest test files beside the source files)
+Phase 4: commit-and-push
+    ↓ (output: commit created and branch pushed to origin)
 Complete Workflow
 ```
 
@@ -112,6 +126,13 @@ Complete Workflow
 - Tool: `skill` with name `unit-test-generator`
 - Input: The module, controllers and services developed in Phase 2 (not the ticket JSON)
 - Expected output: Vitest test files (`<module>.controller.test.ts`, `<module>.service.test.ts`) in `server/src/<module>/`
+- On error: Notify user but complete workflow
+
+### Phase 4: commit-and-push
+
+- Tool: `skill` with name `commit-and-push`
+- Input: None (the skill extracts the ticket ID from the current branch name)
+- Expected output: All changes staged, a commit with message `feat(<ticket-id>): <message>` in English, and the branch pushed to origin
 - On error: Notify user but complete workflow
 
 ## User Interaction Flow
@@ -143,6 +164,12 @@ If Phase 3 fails:
     → Show: "Error: [specific error message]"
     → Notify: "Test generation failed. The NestJS development is complete but tests may need manual work."
     ↓
+Phase 4: Load commit-and-push skill
+    ↓
+If Phase 4 fails:
+    → Show: "Error: [specific error message]"
+    → Notify: "Commit and push failed. The development and tests are complete, but changes may need manual push."
+    ↓
 Workflow Complete
 ```
 
@@ -160,7 +187,9 @@ Skill:
 4. NestJS development complete: User module created with auth endpoints
 5. Loading unit-test-generator...
 6. Unit tests generated for UserService and UserController
-7. Workflow complete!
+7. Loading commit-and-push...
+8. Commit created and branch pushed
+9. Workflow complete!
 ```
 
 ### Flow with Error in Phase 1
@@ -218,7 +247,9 @@ Skill:
 5. Loading unit-test-generator...
 6. Error: Could not determine which service to test
 7. Test generation failed. The NestJS development is complete but tests may need manual work.
-8. Workflow complete
+8. Loading commit-and-push...
+9. Commit created and branch pushed
+10. Workflow complete
 ```
 
 ## Implementation Notes
