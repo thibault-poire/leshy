@@ -20,7 +20,7 @@ env:
   # Target ClickUp status once the pull request is merged.
   # Override with the CLICKUP_DONE_STATUS repository variable if the status
   # label differs in your ClickUp list.
-  CLICKUP_DONE_STATUS: ${{ vars.CLICKUP_DONE_STATUS || 'ACHEVÉ' }}
+  CLICKUP_DONE_STATUS: ${{ vars.CLICKUP_DONE_STATUS || 'closed' }}
 
 jobs:
   complete-ticket:
