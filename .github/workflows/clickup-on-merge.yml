@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       ticket_id:
-        description: "ClickUp ticket id to move to the done status (optional)"
+        description: "ClickUp ticket id to move to the complete status (optional)"
         required: false
         default: ""
 
