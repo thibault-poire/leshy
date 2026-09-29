@@ -13,11 +13,12 @@ Stage all changes, create a commit with a conventional message, and push the cur
 1. **Extract the ticket ID from the branch name.**
    - Run `git rev-parse --abbrev-ref HEAD` to get the current branch name.
    - The branch name starts with the ticket ID followed by `-` (e.g. `869f7ym83-create_locale_endpoint` gives the ID `869f7ym83`).
-   - The ID is the leading segment before the first `-`. If the branch has no such ID prefix, ask the user which ID to u/e.
+   - The ID is the leading segment before the first `-`. If the branch has no such ID prefix, ask the user which ID to use.
 
 2. **Review the changes.**
    - Run `git status` and `git diff` (plus `git diff --cached` if needed) to understand what changed and write an accurate message.
    - Never commit blindly; the message must describe the actual changes.
+   - If `git status` shows changes unrelated to the current ticket (pre-existing modifications or deletions in the working tree), ask the user whether to include them in the commit or leave them unstaged before running `git add -A`.
 
 3. **Stage all changes.**
    - Run `git add -A` to stage all changes, including new files.
