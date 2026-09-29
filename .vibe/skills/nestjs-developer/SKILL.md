@@ -8,6 +8,10 @@ user-invocable: true
 
 This skill helps develop NestJS features following the existing project conventions. It accepts development objectives in JSON format (matching get-clickup-ticket output structure with id, name, markdown_description fields) or plain text format and uses plan mode to systematically break down and execute the development tasks.
 
+## Scope
+
+This skill performs **development only**. Do not generate, modify, or run unit tests.
+
 ## Project Conventions (from codebase analysis)
 
 ### Code Structure
@@ -178,6 +182,7 @@ For each component in the plan:
 1. **Run linting** (from `server/`): `pnpm lint`
 2. **Check TypeScript**: `npx tsc --noEmit`
 3. **Verify structure** matches project conventions
+4. **Do not run tests**: never generate or execute unit tests (`pnpm test`, `pnpm test:cov`); test generation is the responsibility of the `unit-test-generator` skill
 
 ## Input Processing
 
@@ -443,5 +448,4 @@ Skill:
 - Lint: `pnpm lint` (runs `oxlint --type-aware src/ test/`)
 - Format: `pnpm format` (runs `oxfmt src/ test/`)
 - TypeScript check: `npx tsc --noEmit`
-- Test: `pnpm test`
 - Build: `pnpm build`
