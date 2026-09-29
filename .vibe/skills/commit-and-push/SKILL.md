@@ -37,7 +37,12 @@ Stage all changes, create a commit with a conventional message, and push the cur
    - Run `git push -u origin <current-branch>` (with `-u` only when the branch has no upstream yet).
    - Never force-push. If the push is rejected, report the reason to the user instead of retrying.
 
+6. **Return to main and pull.** (only if the push succeeded)
+   - Run `git checkout main`.
+   - Run `git pull origin main`.
+   - If `git checkout main` or the pull fails (e.g. untracked files blocking the checkout, merge conflict), stay on the current branch and report the issue to the user.
+
 ## Notes
 
-- If the working tree is already clean, report it and skip to pushing only if the branch has unpushed commits.
+- If the working tree is already clean, report it and skip to pushing only if the branch has unpushed commits. Step 6 still applies after a successful push.
 - Do not amend or rewrite existing commits unless the user explicitly asks.
