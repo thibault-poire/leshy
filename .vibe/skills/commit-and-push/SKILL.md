@@ -24,8 +24,7 @@ Stage all changes, create a commit with a conventional message, and push the cur
    - Run `git add -A` to stage all changes, including new files.
 
 4. **Commit.**
-   - Create a signed commit: run `git commit -S -m "<message>"`. If `commit.gpgsign` is already enabled in the Git configuration, a plain `git commit -m "<message>"` is equivalent.
-   - If signing fails (no signing key configured, key expired, passphrase prompt unavailable), report the error to the user instead of falling back to an unsigned commit.
+   - Run `git commit -m "<message>"`.
    - Message format (English only, lowercase scope):
      ```
      feat(<ticket-id>): <message>
