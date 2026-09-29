@@ -7,7 +7,9 @@ import type { FindOptionsWhere, Repository } from "typeorm";
 
 @Injectable()
 export class DiseasesService {
-  constructor(@InjectRepository(Disease) private readonly disease_repository: Repository<Disease>) {}
+  constructor(
+    @InjectRepository(Disease) private readonly disease_repository: Repository<Disease>,
+  ) {}
 
   get_all() {
     return this.disease_repository.find();

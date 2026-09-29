@@ -25,7 +25,7 @@ This skill performs **development only**. Do not generate, modify, or run unit t
 
 - Use relative paths starting with `src/` (e.g., `"src/spaces/spaces.service"`)
 - Do NOT use `../` parent imports (oxlint rule: `import/no-relative-parent-imports`)
-- Import order (oxfmt), groups separated by blank lines: nestjs imports (`@nestjs/*`) first, then internal imports (`src/...`), then typeorm type-only imports (`import type { ... } from "typeorm"`) last
+- Import order (oxfmt `sortImports`, groups separated by blank lines): unknown imports first (e.g. `vitest`, relative `./` imports), then `@nestjs/*`, then `typeorm`, then internal `src/...` imports (grouped in order: module, controller, service, entity, dto), then type-only imports (`import type { ... } from "typeorm"`) last
 
 ### TypeScript & NestJS
 
@@ -180,9 +180,10 @@ For each component in the plan:
 ### Phase 6: Validation
 
 1. **Run linting** (from `server/`): `pnpm lint`
-2. **Check TypeScript**: `npx tsc --noEmit`
-3. **Verify structure** matches project conventions
-4. **Do not run tests**: never generate or execute unit tests (`pnpm test`, `pnpm test:cov`); test generation is the responsibility of the `unit-test-generator` skill
+2. **Check formatting** (from `server/`): `pnpm format:check` (run `pnpm format` to fix violations)
+3. **Check TypeScript**: `npx tsc --noEmit`
+4. **Verify structure** matches project conventions
+5. **Do not run tests**: never generate or execute unit tests (`pnpm test`, `pnpm test:cov`); test generation is the responsibility of the `unit-test-generator` skill
 
 ## Input Processing
 
@@ -370,8 +371,10 @@ export class {{ModuleName}} {}
    - No relative parent imports
    - Explicit `any` is allowed by config (`typescript/no-explicit-any` is "off"), but prefer proper types or `unknown`
 3. **Follow oxfmt import order** (groups separated by blank lines):
-   - nestjs imports (`/*`) first
-   - internal imports (`src/...`) second
+   - unknown imports (e.g. `vitest`, relative `./` imports) first
+   - `@nestjs/*` imports second
+   - `typeorm` imports third
+   - internal `src/...` imports fourth (ordered: module, controller, service, entity, dto)
    - typeorm type-only imports (`import type { ... } from "typeorm"`) last
 4. **Use UUID** for primary keys: `@PrimaryGeneratedColumn("uuid")`
 5. **Use ValidationPipe** globally (already configured in main.ts)

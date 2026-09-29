@@ -1,5 +1,5 @@
-import { Disease } from "./entities/disease.entity";
 import { DiseasesService } from "./diseases.service";
+import { Disease } from "./entities/disease.entity";
 import { Repository, ObjectLiteral } from "typeorm";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
