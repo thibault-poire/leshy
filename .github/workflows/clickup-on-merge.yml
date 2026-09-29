@@ -1,0 +1,113 @@
+name: ClickUp ticket automation
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      ticket_id:
+        description: "ClickUp ticket id to move to the done status (optional)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+env:
+  # Target ClickUp status once the pull request is merged.
+  # Override with the CLICKUP_DONE_STATUS repository variable if the status
+  # label differs in your ClickUp list.
+  CLICKUP_DONE_STATUS: ${{ vars.CLICKUP_DONE_STATUS || 'ACHEVÉ' }}
+
+jobs:
+  complete-ticket:
+    name: Move ClickUp ticket to done status
+    # Only run when the pull request was actually merged into main.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract ClickUp ticket ID
+        id: extract
+        env:
+          TICKET_INPUT: ${{ github.event.inputs.ticket_id }}
+          BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+
+          ticket_id="$TICKET_INPUT"
+
+          # Branches follow the "<ticket-id>-<title>" convention, where the
+          # ticket id is either a ClickUp task id (869f98a4m) or a custom id
+          # with a numeric suffix (DEV-123).
+          if [[ -z "$ticket_id" && "$BRANCH_NAME" =~ ^([A-Za-z0-9]+(-[0-9]+)?) ]]; then
+            candidate="${BASH_REMATCH[1]}"
+            # Only keep candidates that look like a ClickUp id: custom ids end
+            # with digits, task ids are alphanumeric containing at least one
+            # digit.
+            if [[ "$candidate" =~ ^[A-Za-z]+-[0-9]+$ ]] || [[ "$candidate" =~ ^[A-Za-z0-9]*[0-9][A-Za-z0-9]*$ ]]; then
+              ticket_id="$candidate"
+            fi
+          fi
+
+          # Fallback: look for a ClickUp task link in the PR title or body.
+          if [[ -z "$ticket_id" ]]; then
+            ticket_id="$(printf '%s\n%s\n%s\n' "$BRANCH_NAME" "$PR_TITLE" "$PR_BODY" \
+              | grep -Eo 'app\.clickup\.com/t/[A-Za-z0-9]+' \
+              | head -n 1 \
+              | cut -d/ -f3 || true)"
+          fi
+
+          echo "ticket_id=$ticket_id" >> "$GITHUB_OUTPUT"
+          echo "Extracted ClickUp ticket id: ${ticket_id:-none}"
+
+      - name: Move ticket to done status
+        env:
+          CLICKUP_TOKEN: ${{ secrets.CLICKUP_TOKEN }}
+          TICKET_ID: ${{ steps.extract.outputs.ticket_id }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "$TICKET_ID" ]]; then
+            echo "No ClickUp ticket id found; skipping."
+            exit 0
+          fi
+
+          http_code="$(
+            curl -sS -o /tmp/task.json -w '%{http_code}' \
+              -H "Authorization: $CLICKUP_TOKEN" \
+              "https://api.clickup.com/api/v2/task/$TICKET_ID"
+          )"
+
+          if [[ "$http_code" == "404" ]]; then
+            echo "::warning::No ClickUp ticket found with id '$TICKET_ID'; skipping."
+            exit 0
+          fi
+
+          if [[ "$http_code" != "200" ]]; then
+            echo "ClickUp API returned HTTP $http_code:" >&2
+            cat /tmp/task.json >&2
+            exit 1
+          fi
+
+          current_status="$(jq -r '.status.status' /tmp/task.json)"
+
+          if [[ "$current_status" == "$CLICKUP_DONE_STATUS" ]]; then
+            echo "Ticket $TICKET_ID is already in status '$CLICKUP_DONE_STATUS'."
+            exit 0
+          fi
+
+          echo "Moving ticket $TICKET_ID from '$current_status' to '$CLICKUP_DONE_STATUS'..."
+          curl -sS --fail-with-body \
+            -X PUT \
+            -H "Authorization: $CLICKUP_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"status\": \"$CLICKUP_DONE_STATUS\"}" \
+            "https://api.clickup.com/api/v2/task/$TICKET_ID" \
+            | jq -e '.status.status' > /dev/null
+
+          echo "Ticket $TICKET_ID moved to '$CLICKUP_DONE_STATUS'."
