@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
+import { DiseasesModule } from "src/diseases/diseases.module";
 import { LocalesModule } from "src/locales/locales.module";
 import { PlantsModule } from "src/plants/plants.module";
 import { SpacesModule } from "src/spaces/spaces.module";
@@ -26,6 +27,7 @@ import { SpacesModule } from "src/spaces/spaces.module";
       inject: [ConfigService],
     }),
 
+    DiseasesModule,
     LocalesModule,
     PlantsModule,
     SpacesModule,
