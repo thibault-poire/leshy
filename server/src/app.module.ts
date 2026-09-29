@@ -6,6 +6,7 @@ import { DiseasesModule } from "src/diseases/diseases.module";
 import { LocalesModule } from "src/locales/locales.module";
 import { PlantsModule } from "src/plants/plants.module";
 import { SpacesModule } from "src/spaces/spaces.module";
+import { TypesModule } from "src/types/types.module";
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { SpacesModule } from "src/spaces/spaces.module";
     LocalesModule,
     PlantsModule,
     SpacesModule,
+    TypesModule,
   ],
 })
 export class AppModule {}
