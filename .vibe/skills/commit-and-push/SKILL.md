@@ -6,7 +6,7 @@ user-invocable: true
 
 # Commit and Push
 
-Stage all changes, create a commit with a conventional message, push the current branch, and open a pull request if needed.
+Stage all changes, create a commit with a conventional message, push the current branch, and return the pull request creation link.
 
 ## Steps
 
@@ -37,14 +37,11 @@ Stage all changes, create a commit with a conventional message, push the current
    - Run `git push -u origin <current-branch>` (with `-u` only when the branch has no upstream yet).
    - Never force-push. If the push is rejected, report the reason to the user instead of retrying.
 
-6. **Create a pull request if needed.** (only if the push succeeded)
+6. **Return the pull request creation link.** (only if the push succeeded)
    - Skip this step when the current branch is the default branch (`main` or `master`) or when a pull request already exists for it.
    - Check for an existing pull request with `gh pr view <current-branch>`. If the command is unavailable, use the GitHub connector tools instead of installing `gh`.
-   - Create the pull request targeting `main`:
-     - Title: reuse the commit message (without the `feat(<ticket-id>): ` prefix) or a concise imperative summary of the change.
-     - Body: a short summary of the change, mentioning the ClickUp ticket ID and its URL when one exists.
-   - Command: `gh pr create --base main --head <current-branch> --title "<title>" --body "<body>"`.
-   - If the pull request creation fails (auth, permissions, API error), report the issue to the user and continue to step 7 without retrying blindly.
+   - Build the link from the remote URL: `https://github.com/<owner>/<repo>/pull/new/<current-branch>` (parse `<owner>/<repo>` from `git remote get-url origin`, handling both SSH and HTTPS formats).
+   - Do not create the pull request; simply return the link to the user so they can open it themselves.
 
 7. **Return to main and pull.** (only if the push succeeded)
    - Run `git checkout main`.
