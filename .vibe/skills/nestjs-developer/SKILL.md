@@ -2,6 +2,7 @@
 name: nestjs-developer
 description: "Load this skill when the user wants to develop NestJS features following project conventions. Accepts development objectives in JSON (similar to get-clickup-ticket output format: id, name, markdown_description) or text format. Uses plan mode to break down tasks."
 user-invocable: true
+allowed-tools: mcp_clickup.clickup_update_task
 ---
 
 # NestJS Developer Skill
@@ -108,6 +109,7 @@ When invoked via `/nestjs-developer` or by describing a NestJS development task:
 3. **Extract requirements** from markdown_description or text using structured parsing
 4. **Validate** that required fields are present
 5. **Request missing information** if needed
+6. **Set the ClickUp ticket status to "active"**: Once the input is validated, use the ClickUp MCP tool `clickup_update_task` (called as `tools.mcp_clickup.clickup_update_task`) with `task_id` set to the ticket `id` and `status` set to "in progress" to mark the ticket being developed as active. If the status update fails, inform the user and continue with development.
 
 ### Phase 2: Analyze Existing Codebase
 
