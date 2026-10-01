@@ -8,6 +8,7 @@ import { NotFoundException } from "@nestjs/common";
 describe("PlantsService", () => {
   const repository_mock = <T extends ObjectLiteral>() =>
     ({
+      create: vi.fn(),
       delete: vi.fn(),
       find: vi.fn(),
       findBy: vi.fn(),
@@ -63,6 +64,89 @@ describe("PlantsService", () => {
 
       await expect(service.get_one(filters)).rejects.toBeInstanceOf(NotFoundException);
       expect(repository.findOneBy).toHaveBeenCalledWith(filters);
+    });
+  });
+
+  describe("add_one", () => {
+    it("should create and save a new plant", async () => {
+      const dto = { binomial_name: "Quercus robur" };
+      const created = { id: "uuid-1", binomial_name: "Quercus robur" };
+
+      vi.mocked(repository.create).mockReturnValue(created);
+      vi.mocked(repository.save).mockResolvedValue(created);
+
+      const result = await service.add_one(dto);
+
+      expect(result).toBe(created);
+      expect(repository.create).toHaveBeenCalledWith(dto);
+      expect(repository.save).toHaveBeenCalledWith(created);
+    });
+  });
+
+  describe("update_one", () => {
+    it("should update and save an existing plant", async () => {
+      const existing = { id: "uuid-1", binomial_name: "Quercus robur" };
+      const dto = { binomial_name: "Quercus petraea" };
+      const expected = { id: "uuid-1", binomial_name: "Quercus petraea" };
+
+      vi.mocked(repository.findOneBy).mockResolvedValue(existing);
+      vi.mocked(repository.save).mockResolvedValue(expected);
+
+      const result = await service.update_one("uuid-1", dto);
+
+      expect(result).toBe(expected);
+      expect(repository.save).toHaveBeenCalledWith(expected);
+    });
+
+    it("should throw NotFoundException when plant not found", async () => {
+      vi.mocked(repository.findOneBy).mockResolvedValue(null);
+
+      await expect(
+        service.update_one("uuid-not-found", { binomial_name: "Quercus petraea" }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe("patch_one", () => {
+    it("should patch and save an existing plant", async () => {
+      const existing = { id: "uuid-1", binomial_name: "Quercus robur" };
+      const dto = { binomial_name: "Quercus petraea" };
+      const expected = { id: "uuid-1", binomial_name: "Quercus petraea" };
+
+      vi.mocked(repository.findOneBy).mockResolvedValue(existing);
+      vi.mocked(repository.save).mockResolvedValue(expected);
+
+      const result = await service.patch_one("uuid-1", dto);
+
+      expect(result).toBe(expected);
+      expect(repository.save).toHaveBeenCalledWith(expected);
+    });
+
+    it("should throw NotFoundException when plant not found", async () => {
+      vi.mocked(repository.findOneBy).mockResolvedValue(null);
+
+      await expect(
+        service.patch_one("uuid-not-found", { binomial_name: "Quercus petraea" }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe("delete_one", () => {
+    it("should delete an existing plant", async () => {
+      const existing = { id: "uuid-1", binomial_name: "Quercus robur" };
+
+      vi.mocked(repository.findOneBy).mockResolvedValue(existing);
+      vi.mocked(repository.delete).mockResolvedValue({ affected: 1, raw: [] });
+
+      await service.delete_one("uuid-1");
+
+      expect(repository.delete).toHaveBeenCalledWith("uuid-1");
+    });
+
+    it("should throw NotFoundException when plant not found", async () => {
+      vi.mocked(repository.findOneBy).mockResolvedValue(null);
+
+      await expect(service.delete_one("uuid-not-found")).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 });
