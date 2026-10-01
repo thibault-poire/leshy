@@ -6,7 +6,7 @@ user-invocable: true
 
 # Commit and Push
 
-Stage all changes, create a commit with a conventional message, and push the current branch.
+Stage all changes, create a commit with a conventional message, push the current branch, and open a pull request if needed.
 
 ## Steps
 
@@ -37,12 +37,21 @@ Stage all changes, create a commit with a conventional message, and push the cur
    - Run `git push -u origin <current-branch>` (with `-u` only when the branch has no upstream yet).
    - Never force-push. If the push is rejected, report the reason to the user instead of retrying.
 
-6. **Return to main and pull.** (only if the push succeeded)
+6. **Create a pull request if needed.** (only if the push succeeded)
+   - Skip this step when the current branch is the default branch (`main` or `master`) or when a pull request already exists for it.
+   - Check for an existing pull request with `gh pr view <current-branch>`. If the command is unavailable, use the GitHub connector tools instead of installing `gh`.
+   - Create the pull request targeting `main`:
+     - Title: reuse the commit message (without the `feat(<ticket-id>): ` prefix) or a concise imperative summary of the change.
+     - Body: a short summary of the change, mentioning the ClickUp ticket ID and its URL when one exists.
+   - Command: `gh pr create --base main --head <current-branch> --title "<title>" --body "<body>"`.
+   - If the pull request creation fails (auth, permissions, API error), report the issue to the user and continue to step 7 without retrying blindly.
+
+7. **Return to main and pull.** (only if the push succeeded)
    - Run `git checkout main`.
    - Run `git pull origin main`.
    - If `git checkout main` or the pull fails (e.g. untracked files blocking the checkout, merge conflict), stay on the current branch and report the issue to the user.
 
 ## Notes
 
-- If the working tree is already clean, report it and skip to pushing only if the branch has unpushed commits. Step 6 still applies after a successful push.
+- If the working tree is already clean, report it and skip to pushing only if the branch has unpushed commits. Steps 6 and 7 still apply after a successful push.
 - Do not amend or rewrite existing commits unless the user explicitly asks.
